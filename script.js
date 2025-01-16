@@ -46,10 +46,10 @@ const countriesContainer = document.querySelector('.countries');
 
 ///////////////////////////////////////
 
-// Lecture 4: Our first AJAX call XMLHttpRequest 
+// Lecture 5: Our first AJAX call XMLHttpRequest 
 
 // in cards , we have data about certain countries and this data is coming from third party online API. A kind of magically get data from the internet and then use it in the website we are building.
-// There are multiple way of doing AJAX call. We start with most old school one which XMLHttpRequest
+// There are multiple way of doing AJAX call. We start with most old school one which is XMLHttpRequest
 // The two reason for doing this. First one is that this kind of AJAX call still exists and second one is to show how AJAX call used to handle with events and call-back functions
 // Then we will move to more modern way of handling asynchronous javascript, which is gonna be a feature called promises
 // const getCountryData = function (country) {
@@ -124,54 +124,54 @@ const countriesContainer = document.querySelector('.countries');
 // in the data of a country there is property which is borders which tells us about the neighbor country. So by first getting the data of a country with its property we will get the data of neighboring country so second AJAX call depends upon the first AJAX call. So we are implementing the sequence of AJAX calls 
 // Now we will modify the code of function getCountryData and first its name be like getCountryAndNeighbor and when the data for the country is arrived the html for the neighbor country is parsed again so we will write it in the separate function  
 
-const renderCountry = function(data, className='') {
-    const html = `
-    <article class="country ${className}">
-      <img class="country__img" src="${data.flag}" />
-      <div class="country__data">
-        <h3 class="country__name">${data.name}</h3>
-        <h4 class="country__region">${data.region}</h4>
-        <p class="country__row"><span>👫</span>${(+data.population/1000000).toFixed(1)}</p>
-        <p class="country__row"><span>🗣️</span>${data.languages[0].name}</p>
-        <p class="country__row"><span>💰</span>${data.currencies[0].name}</p>
-      </div>
-    </article>
-    `
-    countriesContainer.insertAdjacentHTML('beforeend', html);
-    countriesContainer.style.opacity = 1;
-}
+// const renderCountry = function(data, className='') {
+//     const html = `
+//     <article class="country ${className}">
+//       <img class="country__img" src="${data.flag}" />
+//       <div class="country__data">
+//         <h3 class="country__name">${data.name}</h3>
+//         <h4 class="country__region">${data.region}</h4>
+//         <p class="country__row"><span>👫</span>${(+data.population/1000000).toFixed(1)}</p>
+//         <p class="country__row"><span>🗣️</span>${data.languages[0].name}</p>
+//         <p class="country__row"><span>💰</span>${data.currencies[0].name}</p>
+//       </div>
+//     </article>
+//     `
+//     countriesContainer.insertAdjacentHTML('beforeend', html);
+//     countriesContainer.style.opacity = 1;
+// }
 
-const getCountryAndNeighbor = function (country) {
-    // AJAX call country 1
-    const request = new XMLHttpRequest();
-    request.open('GET', `https://countries-api-836d.onrender.com/countries/name/${country}`);
-    request.send();
-    request.addEventListener('load', function(){
-        const [data] = JSON.parse(this.responseText)
-        // Render country 1
-        renderCountry(data)
-        // get neighbor country (2)
-        const [neighbor] = data.borders
-        // if there is no neighbor country then we will avoid error using guard clause
-        if(!neighbor) return;
-        // AJAX call country 2
-        const request2 = new XMLHttpRequest();
-        request2.open('GET', `https://countries-api-836d.onrender.com/countries/alpha/${neighbor}`);
-        request2.send()
-        // in the neighbor we get the code and not the name wwe can access a country by the code which is the use of alpha so we have used it.
-        request2.addEventListener('load', function() {
-            const data2 = JSON.parse(this.responseText)
-            // console.log(data2)
-            // in this time we do not need of destructuring because the country code give the unique data and so it gives us the direct object 
-            renderCountry(data2, 'neighbor')
-        })
-        // here we have call back inside a call back 
-        // No matter how many time we reload the page this second response comes after the first response there is no way to get this response before the first response. 
-        // What if we have call back inside call back which is inside call back and so on upto 10 times. This nested callback have the special name which is call back hell and all happens in the sequence.
-        // This thing is associated with the nature of call back function and not the AJAX call
-    })
-}
-getCountryAndNeighbor('germany')
+// const getCountryAndNeighbor = function (country) {
+//     // AJAX call country 1
+//     const request = new XMLHttpRequest();
+//     request.open('GET', `https://countries-api-836d.onrender.com/countries/name/${country}`);
+//     request.send();
+//     request.addEventListener('load', function(){
+//         const [data] = JSON.parse(this.responseText)
+//         // Render country 1
+//         renderCountry(data)
+//         // get neighbor country (2)
+//         const [neighbor] = data.borders
+//         // if there is no neighbor country then we will avoid error using guard clause
+//         if(!neighbor) return;
+//         // AJAX call country 2
+//         const request2 = new XMLHttpRequest();
+//         request2.open('GET', `https://countries-api-836d.onrender.com/countries/alpha/${neighbor}`);
+//         request2.send()
+//         // in the neighbor we get the code and not the name wwe can access a country by the code which is the use of alpha so we have used it.
+//         request2.addEventListener('load', function() {
+//             const data2 = JSON.parse(this.responseText)
+//             // console.log(data2)
+//             // in this time we do not need of destructuring because the country code give the unique data and so it gives us the direct object 
+//             renderCountry(data2, 'neighbor')
+//         })
+//         // here we have call back inside a call back 
+//         // No matter how many time we reload the page this second response comes after the first response there is no way to get this response before the first response. 
+//         // What if we have call back inside call back which is inside call back and so on upto 10 times. This nested callback have the special name which is call back hell and all happens in the sequence.
+//         // This thing is associated with the nature of call back function and not the AJAX call
+//     })
+// }
+// getCountryAndNeighbor('germany')
 
 // the other example to look the call back hell
 // setTimeout(()=>{
@@ -191,6 +191,23 @@ getCountryAndNeighbor('germany')
 ///////////////////////////////////////
 
 // Lecture 8: Promises and Fetch API
+// More modern way of AJAX call is the fetch APIs.
+const request = fetch('https://countries-api-836d.onrender.com/countries/name/portugal')
+// For the simple get request we just need to pass the API url in the fetch function. 
+console.log(request)
+// in console we get that fetch request returns us the promise.
+// Promise : An object that is used as placeholder for the future result of an asynchronous operations
+//Promise: A container for an asynchronously delivered value.
+//Promise: A container for future value. example: Response coming from AJAX call.
+// because at the start there is no value in the AJAX call but we know that there must be some value in the future and we will handle this future value.
+// Analogy -> i have bought the ticket of lottery now with the promise that if i will choose the right option i will get the amount.
+// Two advantages of using promises
+// (1): We no longer rely on the events and call back functions for AJAX call using fetch APIs.
+// (2): Instead of nesting call-backs, now we have promises chain which has avoided the call-back hells.
+// The promise life-cycle: Before the future value is available -> the promise status is pending. in this state the async task is running in the background. When the task is completed then the promise status is settled. This settled state is of two types (1): fulfilled -> if the data is successfully loaded and (2): Rejected -> if the data returns the error.  
+
+
+
 
 ///////////////////////////////////////
 
