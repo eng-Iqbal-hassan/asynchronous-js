@@ -138,7 +138,13 @@ const renderCountry = function(data, className='') {
     </article>
     `
     countriesContainer.insertAdjacentHTML('beforeend', html);
-    countriesContainer.style.opacity = 1;
+    // countriesContainer.style.opacity = 1;
+    // This property is moved in the finally method.
+}
+
+const renderError = function(msg) {
+  countriesContainer.insertAdjacentText('beforeend',msg);
+  // countriesContainer.style.opacity = 1;
 }
 
 // const getCountryAndNeighbor = function (country) {
@@ -228,18 +234,64 @@ console.log(request)
 // }
 
 // The simplified version of the code is like:
+// const getCountryData = function(country) {
+//   fetch(`https://countries-api-836d.onrender.com/countries/name/${country}`)
+//   .then(response=>{
+//     console.log('response', response)
+//     if(!response.ok) {
+//       throw new Error(`Country not found ${response.status}`)
+//     }
+//     return response.json()
+//   })
+//   .then(data=>{
+//     renderCountry(data[0]);
+//     const neighbor = data[0].borders?.[0];
+//     // const neighbor = 'bkhchvyc'
+//     // in this case the error will be generated for the neighboring country and we have handled them.
+//     if (!neighbor) return;
+//     return fetch(`https://countries-api-836d.onrender.com/countries/alpha/${neighbor}`)
+//   })
+//   // .then(response=>response.json(), error => alert(error))
+//   // instead of catching the error inside then method we have catch it at the end
+//   .then(response=>{
+//     console.log('response', response)
+//     if(!response.ok) {
+//       throw new Error(`Country not found ${response.status}`)
+//     }
+//     return response.json()
+//   })
+//   .then(data=>renderCountry(data,'neighbor'))
+//   .catch(error => renderError(`something went wrong ${error.message} try again!`))
+//   .finally(()=>{
+//     countriesContainer.style.opacity = 1;
+//   })
+// }
+
+const getJSON = function(url, errorMsg='Something went wrong') {
+  return fetch(url).then(response=>{
+    console.log('response', response)
+    if(!response.ok) {
+      throw new Error(`${errorMsg} ${response.status}`)
+    }
+    return response.json()
+  })
+}
+
 const getCountryData = function(country) {
-  fetch(`https://countries-api-836d.onrender.com/countries/name/${country}`)
-  .then(response=>response.json())
+  getJSON(`https://countries-api-836d.onrender.com/countries/name/${country}`,'Country not found')
   .then(data=>{
     renderCountry(data[0]);
     const neighbor = data[0].borders?.[0];
-    if (!neighbor) return;
-    return fetch(`https://countries-api-836d.onrender.com/countries/alpha/${neighbor}`)
+    if (!neighbor) throw new Error('no neighbor found');
+    return getJSON(`https://countries-api-836d.onrender.com/countries/alpha/${neighbor}`, 'Country not found')
   })
-  .then(response=>response.json())
   .then(data=>renderCountry(data,'neighbor'))
+  .catch(error => renderError(`something went wrong ${error.message} try again!`))
+  .finally(()=>{
+    countriesContainer.style.opacity = 1;
+  })
 }
+
 // so this piece of code getting the AJAX call is very short and straight forward. It has avoided the implementation of load event and addEventListener. We are still using the call back but it has avoided the call back hell.  
 ///////////////////////////////////////
 
@@ -248,13 +300,48 @@ const getCountryData = function(country) {
 // This call is inside the second then method
 // one thing that must remember that if we return the AJAX call from the then method it returns the promise and on this promise we can apply further methods to give the data of second country 
 // instead of returning the second fetch one can apply directly the then method on to it. This thing will work but it will again create the call back hell so we should avoid that thing and must use the return and apply the then method
-// in this way we have avoided the call-back hell but we have created the flat chain of then methods. 
+// in this way we have avoided the call-back hell but we have created the flat chain of then methods.
 
-getCountryData('portugal')
+// getCountryData('portugal')
 // ok we have consumed the fetch function directly in the function. We  know that as soon as the fetch function is called, it ultimately gives us the promise which is still in the pending state but async task is running in the background. and it will ultimately be completed and it settles. let say the settled state is fulfilled and then we need to manage the result which this fetch API has generated. For it, then method is used 
 // In this then method, call back function is given whose param let say is the response. and in console we get the response which is the object of output data and in this way the fetch API gonna work.  
 
+///////////////////////////////////////
 
+// Lecture 11: Handling Rejected Promises
+// now let say that we find these countries card when we click on the button
+btn.addEventListener('click',function(){
+  getCountryData('Australia')
+})
+// now let say that we have loose the internet connection, then we will get
+// uncaught (in promise) typeError: Failed to fetch
+// so we need to handle this error
+// one way is to handle it inside the then method of the response, second argument will be call-back function for the errors.
+// so in the then method, first argument is success result and second argument is the error handling.
+// Handling the error is also called catching the error.
+// ok let say there is no error in the fetch and there is error in the second fetch then we will also catch the error in that response as well. 
+// but it is not the good approach to catch these errors in that places 
+// So, this catching should be at one global place which is at the last by using catch method.
+// No matter where in the chain, the error moves down the track and if it is not catch at any place then it gives in the console uncaught (in promise) typeError 
+// Ok instead of alert window, in real use-case we have to display some message in the browser
+// So we have created the renderError function to give us the text message in place of cards if error does occur.
+// So there are two ways of handling the error. One is inside the then method of the response and second is in the catch method
+// then method is called when the status is fulfilled and catch method is called when it is rejected
+// there is one method which is always called no matter then or catch method is applied or not. This method is called finally method.
+// In both then and catch status one thing that we are doing is to add a property which is countriesContainer.style.opacity = 1; So the perfect place of its adding is in the finally method.
+// if we search with the name which does not exist then it gives us the error which is 'cannot read property 'flag' of undefine'
+// the error we get has not catch in the catch method. it is being catch in the getCountryData('dxjkbjhdv') and its status is 404. So for this kind of error we want to show that no country with this name does exist. 
+
+///////////////////////////////////////
+
+// Lecture 12: Throwing Errors Manually.
+// So i have consoled the response and observe that for search of country with name does not exist, the status is 404 and ok property is set to false. If country does exist then status is 200 and ok is set to true.
+// In case when country does not exist we have manually created the error object with constructor function new Error and inside it there is the error message. Then, there is throw keyword which immediately terminate the current function like return terminate the function. If error is returned from any function, then it will directly move down the track and perform the catch block.
+// Why should we handle these errors. The reason is that there is no way of displaying these error messages without handling them and the other thing is that it is a very bad practice to let these error always hanging around. One should must handle these errors.
+// always do handle the error in all the places so also in the neighbor fetch call these error should be handled  
+// it is being seen that the then method for getting response for both fetches are exactly same. This is the nice place where we can use the helper function.
+// so we will make one function which will make fetch function call and a then method for response. 
+// So for a country for which no neighbor country we need to more reasonable message manually
 
 ///////////////////////////////////////
 
