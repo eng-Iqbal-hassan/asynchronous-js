@@ -345,3 +345,47 @@ btn.addEventListener('click',function(){
 
 ///////////////////////////////////////
 
+// Lecture 14: Async Js Behind the scene
+
+// Js engine consists of two things (1): Heap -> where objects are stored in memory (2): Call stack -> where code is actually executed.
+// Web APIs are DOM APIs, timers and fetch API. These APIs are not the part of Js but Js support them to do their work.
+// These APIs are provided to the engine through event loop. These event loops sends call back from queue to call stack where its execution does happens. these call back continues to be sent to the call stack all the time.
+// there is web API environment in Js, where async tasks are executed in the background
+// lets consider the code snippet and its working in the Js
+// el = document.querySelector('img');
+// el.src = 'dog.jpg';
+// el.addEventListener('load', ()=> {
+//   el.classList.add('fadeIn')
+// })
+// fetch('API url').then(res=>console.log(res))
+// In Js loading the images always an async task, so loading the images do not happen in the execution context rather it happens in the web API environment.
+// In EC, addEventListener is executed and ()=>{ el.classList.add('fadeIn')} is in web API environment
+//After that EC has the fetch call and fetching data is done in web API environment.
+// So all other things keep executing and when the data is fetched meanwhile it shows its result in the page. 
+// Similarly, then method has its call in EC and response is generated in web API environment.
+// Now consider the image is loaded, then ()=>{ el.classList.add('fadeIn')} will move to call back queue 
+// There can be multiple tasks in call back queue. Let say there is setTimeout which is executed in 5 seconds. Then it will take at least 5 second to execute. But it is not guaranteed that it will be executed in 5 second it can take more time and not the less time in the case when there are other tasks are completing first
+// Now there is the work of event loop come into the place. It sees that if there is nothing in EC except global execution context, then it will take the task from call back queue into the EC.So in our case in EC the execution will be of (a): el.src (callback) (b): add()
+// So event loop has the important task of coordinating call-back with EC in call stack.
+// event loop decides when each call back is executed.
+// Just the recap, image is loaded in the web API environment, once the image is loaded, the call back is gone in the call back queue and when there is call stack is left with global execution context only then the event loop moves the call back in the call stack.
+// Noe fetching the data is also in the web API environment. when the data is fetched the callbacks of the promises do not move to the call back queue it moves to the micro-task queue and from here it goes to call stack and execution is performed.
+// One thing about microtask queue is that it has priority over the call-back queue. So, event loop checks if there is any task in microtask queue if there is any then it performs no matter how many tasks are present in the call-back queue
+  
+///////////////////////////////////////
+
+// Lecture 15: The Event Loop in practice
+console.log('test start')
+setTimeout(()=>console.log('0 sec timer'),0)
+Promise.resolve('Resolve Promise 1').then(res=>console.log(res));
+Promise.resolve('Resolve Promise 2').then(res=>{
+  for (let i=0; i<100000000; i++) {}
+  // So this is the timer who has delayed the response
+  console.log(res)
+})
+console.log('test end')
+// in console that synchronous code executes first. So the order of result is 1,5,3,4,2
+// Also the call backs in micro-task queue have priority than call backs in call-back queue.
+
+///////////////////////////////////////
+
