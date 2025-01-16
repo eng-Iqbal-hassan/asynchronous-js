@@ -231,9 +231,24 @@ console.log(request)
 const getCountryData = function(country) {
   fetch(`https://countries-api-836d.onrender.com/countries/name/${country}`)
   .then(response=>response.json())
-  .then(data=>renderCountry(data[0]))
+  .then(data=>{
+    renderCountry(data[0]);
+    const neighbor = data[0].borders?.[0];
+    if (!neighbor) return;
+    return fetch(`https://countries-api-836d.onrender.com/countries/alpha/${neighbor}`)
+  })
+  .then(response=>response.json())
+  .then(data=>renderCountry(data,'neighbor'))
 }
 // so this piece of code getting the AJAX call is very short and straight forward. It has avoided the implementation of load event and addEventListener. We are still using the call back but it has avoided the call back hell.  
+///////////////////////////////////////
+
+// Lecture 10: Chaining the Promises.
+// To get the data of neighbor country we need to make the second AJAX call.
+// This call is inside the second then method
+// one thing that must remember that if we return the AJAX call from the then method it returns the promise and on this promise we can apply further methods to give the data of second country 
+// instead of returning the second fetch one can apply directly the then method on to it. This thing will work but it will again create the call back hell so we should avoid that thing and must use the return and apply the then method
+// in this way we have avoided the call-back hell but we have created the flat chain of then methods. 
 
 getCountryData('portugal')
 // ok we have consumed the fetch function directly in the function. We  know that as soon as the fetch function is called, it ultimately gives us the promise which is still in the pending state but async task is running in the background. and it will ultimately be completed and it settles. let say the settled state is fulfilled and then we need to manage the result which this fetch API has generated. For it, then method is used 
