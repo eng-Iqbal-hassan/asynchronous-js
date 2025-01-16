@@ -124,22 +124,22 @@ const countriesContainer = document.querySelector('.countries');
 // in the data of a country there is property which is borders which tells us about the neighbor country. So by first getting the data of a country with its property we will get the data of neighboring country so second AJAX call depends upon the first AJAX call. So we are implementing the sequence of AJAX calls 
 // Now we will modify the code of function getCountryData and first its name be like getCountryAndNeighbor and when the data for the country is arrived the html for the neighbor country is parsed again so we will write it in the separate function  
 
-// const renderCountry = function(data, className='') {
-//     const html = `
-//     <article class="country ${className}">
-//       <img class="country__img" src="${data.flag}" />
-//       <div class="country__data">
-//         <h3 class="country__name">${data.name}</h3>
-//         <h4 class="country__region">${data.region}</h4>
-//         <p class="country__row"><span>👫</span>${(+data.population/1000000).toFixed(1)}</p>
-//         <p class="country__row"><span>🗣️</span>${data.languages[0].name}</p>
-//         <p class="country__row"><span>💰</span>${data.currencies[0].name}</p>
-//       </div>
-//     </article>
-//     `
-//     countriesContainer.insertAdjacentHTML('beforeend', html);
-//     countriesContainer.style.opacity = 1;
-// }
+const renderCountry = function(data, className='') {
+    const html = `
+    <article class="country ${className}">
+      <img class="country__img" src="${data.flag}" />
+      <div class="country__data">
+        <h3 class="country__name">${data.name}</h3>
+        <h4 class="country__region">${data.region}</h4>
+        <p class="country__row"><span>👫</span>${(+data.population/1000000).toFixed(1)}</p>
+        <p class="country__row"><span>🗣️</span>${data.languages[0].name}</p>
+        <p class="country__row"><span>💰</span>${data.currencies[0].name}</p>
+      </div>
+    </article>
+    `
+    countriesContainer.insertAdjacentHTML('beforeend', html);
+    countriesContainer.style.opacity = 1;
+}
 
 // const getCountryAndNeighbor = function (country) {
 //     // AJAX call country 1
@@ -205,7 +205,39 @@ console.log(request)
 // (1): We no longer rely on the events and call back functions for AJAX call using fetch APIs.
 // (2): Instead of nesting call-backs, now we have promises chain which has avoided the call-back hells.
 // The promise life-cycle: Before the future value is available -> the promise status is pending. in this state the async task is running in the background. When the task is completed then the promise status is settled. This settled state is of two types (1): fulfilled -> if the data is successfully loaded and (2): Rejected -> if the data returns the error.  
+///////////////////////////////////////
 
+// Lecture 9: consuming the promise. 
+// In lecture 8 we have the promise equals to request and we are in the state that we have build the promise. But most of the time we directly consume the process without building it.
+
+// const getCountryData = function(country) {
+//   fetch(`https://countries-api-836d.onrender.com/countries/name/${country}`)
+//   .then(function(response) {
+//     // console.log(response)
+//       // in the response the data is in the response body which is readable stream and then to get the data we have to apply json method on this response. 
+//     // response.json();
+//       // But the problem is that this response.json is still a new asynchronous task which in return give us another promise and then we need to apply then method again on this promise
+//     return response.json()
+//   })
+//   .then(function(data){
+//     console.log(data)
+//     // now in the console now i have the complete data about the country which i have added in getCountryData function call. this data is the array whose 0 index is the object for the country.
+//     // so we have called the renderCountry function on it to get country card. 
+//     renderCountry(data[0])
+//   })
+// }
+
+// The simplified version of the code is like:
+const getCountryData = function(country) {
+  fetch(`https://countries-api-836d.onrender.com/countries/name/${country}`)
+  .then(response=>response.json())
+  .then(data=>renderCountry(data[0]))
+}
+// so this piece of code getting the AJAX call is very short and straight forward. It has avoided the implementation of load event and addEventListener. We are still using the call back but it has avoided the call back hell.  
+
+getCountryData('portugal')
+// ok we have consumed the fetch function directly in the function. We  know that as soon as the fetch function is called, it ultimately gives us the promise which is still in the pending state but async task is running in the background. and it will ultimately be completed and it settles. let say the settled state is fulfilled and then we need to manage the result which this fetch API has generated. For it, then method is used 
+// In this then method, call back function is given whose param let say is the response. and in console we get the response which is the object of output data and in this way the fetch API gonna work.  
 
 
 
