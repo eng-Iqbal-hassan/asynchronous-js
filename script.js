@@ -138,13 +138,13 @@ const renderCountry = function(data, className='') {
     </article>
     `
     countriesContainer.insertAdjacentHTML('beforeend', html);
-    // countriesContainer.style.opacity = 1;
+    countriesContainer.style.opacity = 1;
     // This property is moved in the finally method.
 }
 
 const renderError = function(msg) {
   countriesContainer.insertAdjacentText('beforeend',msg);
-  // countriesContainer.style.opacity = 1;
+  countriesContainer.style.opacity = 1;
 }
 
 // const getCountryAndNeighbor = function (country) {
@@ -198,9 +198,9 @@ const renderError = function(msg) {
 
 // Lecture 8: Promises and Fetch API
 // More modern way of AJAX call is the fetch APIs.
-const request = fetch('https://countries-api-836d.onrender.com/countries/name/portugal')
+// const request = fetch('https://countries-api-836d.onrender.com/countries/name/portugal')
 // For the simple get request we just need to pass the API url in the fetch function. 
-console.log(request)
+// console.log(request)
 // in console we get that fetch request returns us the promise.
 // Promise : An object that is used as placeholder for the future result of an asynchronous operations
 //Promise: A container for an asynchronously delivered value.
@@ -267,30 +267,30 @@ console.log(request)
 //   })
 // }
 
-const getJSON = function(url, errorMsg='Something went wrong') {
-  return fetch(url).then(response=>{
-    console.log('response', response)
-    if(!response.ok) {
-      throw new Error(`${errorMsg} ${response.status}`)
-    }
-    return response.json()
-  })
-}
+// const getJSON = function(url, errorMsg='Something went wrong') {
+//   return fetch(url).then(response=>{
+//     console.log('response', response)
+//     if(!response.ok) {
+//       throw new Error(`${errorMsg} ${response.status}`)
+//     }
+//     return response.json()
+//   })
+// }
 
-const getCountryData = function(country) {
-  getJSON(`https://countries-api-836d.onrender.com/countries/name/${country}`,'Country not found')
-  .then(data=>{
-    renderCountry(data[0]);
-    const neighbor = data[0].borders?.[0];
-    if (!neighbor) throw new Error('no neighbor found');
-    return getJSON(`https://countries-api-836d.onrender.com/countries/alpha/${neighbor}`, 'Country not found')
-  })
-  .then(data=>renderCountry(data,'neighbor'))
-  .catch(error => renderError(`something went wrong ${error.message} try again!`))
-  .finally(()=>{
-    countriesContainer.style.opacity = 1;
-  })
-}
+// const getCountryData = function(country) {
+//   getJSON(`https://countries-api-836d.onrender.com/countries/name/${country}`,'Country not found')
+//   .then(data=>{
+//     renderCountry(data[0]);
+//     const neighbor = data[0].borders?.[0];
+//     if (!neighbor) throw new Error('no neighbor found');
+//     return getJSON(`https://countries-api-836d.onrender.com/countries/alpha/${neighbor}`, 'Country not found')
+//   })
+//   .then(data=>renderCountry(data,'neighbor'))
+//   .catch(error => renderError(`something went wrong ${error.message} try again!`))
+//   .finally(()=>{
+//     countriesContainer.style.opacity = 1;
+//   })
+// }
 
 // so this piece of code getting the AJAX call is very short and straight forward. It has avoided the implementation of load event and addEventListener. We are still using the call back but it has avoided the call back hell.  
 ///////////////////////////////////////
@@ -487,6 +487,8 @@ getPosition().then(pos=>console.log(pos))
 
 ///////////////////////////////////////
 
+
+/*
 // Lecture 18: Coding challenge
 const imgContainer = document.querySelector('.images');
 // create the function which return the promise 
@@ -524,6 +526,36 @@ createImage('img/img-1.jpg').then(img=>{
 })
 .catch(err=>console.error(err))
 // in this whole process img-1 is loaded and after 2 second it is removed and second image is added and after 2 second the second image also have removed
+
+///////////////////////////////////////
+*/
+
+// Lecture 19: Consuming Promise with async/await
+// we can make our function asynchronous by just adding async in front of the function
+// This special kind of function will run in the background while performing the code inside it and when this function is done it will return the promise.
+// and with this async function we use the await keyword for the wait of result.
+// basically await will stop the code execution at this point until the promise is fulfilled
+// Is it blocking the EC?
+// No, it is not blocking the main thread of the call stack as this code is executing in the background.
+// and in our current case the data is fetched
+
+const getCountryData2 = async function(country) {
+  const res = await fetch(`https://countries-api-836d.onrender.com/countries/name/${country}`)
+  // this await statement will give us the response when data appears. so we need to store it in the variable
+  // so this thing has given us the rid from then method and directly give us the response object.
+  console.log('response using async await',res)
+  // in console it is clear that the result is the data object.
+  const data = await res.json();
+  console.log('data-2',data)
+  // console.log('data-2',data[0])
+  renderCountry(data[0])
+  // So these two awaits give us the promises and these are the replacement of then method 
+}
+getCountryData2('Portugal')
+console.log('first response')
+// So, async await are just syntactic sugar over the then method and behind the scene we still use the promises 
+// The country card is shown and we have make the call even avoiding the chaining method as well and also avoid the mess of call-back function 
+
 
 ///////////////////////////////////////
 
