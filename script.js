@@ -540,22 +540,42 @@ createImage('img/img-1.jpg').then(img=>{
 // and in our current case the data is fetched
 
 const getCountryData2 = async function(country) {
-  const res = await fetch(`https://countries-api-836d.onrender.com/countries/name/${country}`)
-  // this await statement will give us the response when data appears. so we need to store it in the variable
-  // so this thing has given us the rid from then method and directly give us the response object.
-  console.log('response using async await',res)
-  // in console it is clear that the result is the data object.
-  const data = await res.json();
-  console.log('data-2',data)
-  // console.log('data-2',data[0])
-  renderCountry(data[0])
-  // So these two awaits give us the promises and these are the replacement of then method 
+  try {
+    const res = await fetch(`https://countries-api-836d.onrender.com/countries/name/${country}`)
+    if(!res.ok) throw new Error('Problem finding the country')
+    // this await statement will give us the response when data appears. so we need to store it in the variable
+    // so this thing has given us the rid from then method and directly give us the response object.
+    console.log('response using async await',res)
+    // in console it is clear that the result is the data object.
+    const data = await res.json();
+    console.log('data-2',data)
+    // console.log('data-2',data[0])
+    renderCountry(data[0])
+    // So these two awaits give us the promises and these are the replacement of then method 
+  } catch(err) {
+    console.error(err)
+    renderError(`Something went wrong ${err.message}`)
+  }
 }
-getCountryData2('Portugal')
+getCountryData2('Portugallhkg')
 console.log('first response')
 // So, async await are just syntactic sugar over the then method and behind the scene we still use the promises 
 // The country card is shown and we have make the call even avoiding the chaining method as well and also avoid the mess of call-back function 
 
+///////////////////////////////////////
+
+// Lecture 20: Error handling with try---catch
+// we write our complete code in the try block if some error occurs then it handles in the catch block
+// try {
+//   const a=3;
+//   a=2;
+// } catch(err) {
+//   alert(err.message)
+// }
+// here the error has appear in the alert window and remove from console.
+// we do not make our try catch block to find the error of our code we do it for async calls, if any error appears there, it will be catered
+// the error find in the catch block on its own are not meaningful so we can manually throw the error and this error will immidiately catch in the catch block
+// in the response there is flag of ok which gives the value false if the country is wrong so use that flag for getting the right error message.
 
 ///////////////////////////////////////
 
