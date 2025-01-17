@@ -375,17 +375,115 @@ btn.addEventListener('click',function(){
 ///////////////////////////////////////
 
 // Lecture 15: The Event Loop in practice
-console.log('test start')
-setTimeout(()=>console.log('0 sec timer'),0)
-Promise.resolve('Resolve Promise 1').then(res=>console.log(res));
-Promise.resolve('Resolve Promise 2').then(res=>{
-  for (let i=0; i<100000000; i++) {}
-  // So this is the timer who has delayed the response
-  console.log(res)
-})
-console.log('test end')
+// console.log('test start')
+// setTimeout(()=>console.log('0 sec timer'),0)
+// Promise.resolve('Resolve Promise 1').then(res=>console.log(res));
+// Promise.resolve('Resolve Promise 2').then(res=>{
+//   for (let i=0; i<100000000; i++) {}
+//   // So this is the timer who has delayed the response
+//   console.log(res)
+// })
+// console.log('test end')
 // in console that synchronous code executes first. So the order of result is 1,5,3,4,2
 // Also the call backs in micro-task queue have priority than call backs in call-back queue.
+
+///////////////////////////////////////
+
+// Lecture 16: Building a simple Promise
+// So far we know about consuming the promise like getting the promise from fetch call. Also we have the success of promise by promise.resolve 
+// Now create our own new promise by promise constructor 
+// in Js promises are special kind of objects. this promise constructor has one argument only which is called executor function. 
+const lotteryPromise = new Promise(function(resolve,reject){
+  setTimeout(function(){
+    if(Math.random() >= 0.5) {
+      resolve('You win the lottery')
+    }else {
+      reject('You have lost the lottery')
+    }
+  },2000)
+})
+// As soon as the promise constructor runs, it executes the executor function
+// executor function in return pass in the two functions which are resolve in case when the promise is fulfilled and reject function in the case when the promise is rejected
+// whatever the value is passed in the resolve function will be the response for then method.
+// and in reject function there is the error message which will be handled in the catch method
+// Now, we will consume the promise in the way
+lotteryPromise.then(res=>console.log(res)).catch(err=>console.error(err))
+
+// All the code is not really asynchronous yet so add the setTimeout in it to make it async.
+// So in this way, we encapsulated the asynchronous behavior into a promise and then we consume the promise.
+// Most of the time we only consume the promise and we usually built promises to basically wrap old call back functions into promise.
+// So, this is the way to convert call-back based asynchronous behavior to promise base. this thing is called promisifying.
+
+// Promisifying the setTimeout 
+
+
+const wait = function(seconds) {
+  return new Promise(function(resolve){
+    setTimeout(resolve,seconds*1000)
+  })
+}
+
+// this function will return a promise and in the call of the function we will use the then method we have not specified any value of the resolve and it is not mandetory. Also we do not need the reject function because it is impossible for timer to fail, so we are not countering the reject function. 
+
+
+
+// it will avoid the call back hell and we will get flat chain of promise in our code. So this is the way of formatting our code to avoid the call back hell.
+
+// setTimeout(()=>{
+//     console.log('1 sec passed')
+//     setTimeout(()=>{
+//         console.log('2 sec passed')
+//         setTimeout(()=>{
+//             console.log('3 sec passed')
+//             setTimeout(()=>{
+//                 console.log('4 sec passed')
+//             }, 1000)
+//         }, 1000)
+//     }, 1000)
+// }, 1000)
+
+wait(1).then(()=>{
+  console.log('1 second pass')
+  return wait(1)
+}).then(()=>{
+  console.log('2 second pass')
+  return wait(1)
+}).then(()=>{
+  console.log('3 second pass')
+  return wait(1)
+}).then(()=>{
+  console.log('4 second pass')
+})
+
+// there are resolve and reject static methods on promise object which will give its value immidiately
+Promise.resolve('abc').then(x=>console.log(x));
+Promise.reject(new Error('error')).catch(x=>console.log(x))
+
+
+///////////////////////////////////////
+
+// Lecture 17: Promisifying the geo-location API
+// We are gonna promisify the geolocation API
+// navigator.geolocation.getCurrentPosition take two functions as argument. One is the success ion which it returns the position and second one is the error
+// navigator.geolocation.getCurrentPosition(position=>console.log(position),err=>console.error(err))
+console.log('getting position')
+// getting the current position in this way is the async behavior. The proof is that console is run first, which i mentioned after
+// this result generation of the geolocation API is moved to the web API environment and then move to the next line in the console.
+// Here it is clear that this API is a call-back base API and there is nice opportunity to promisify it.
+
+// so the code for API given above will change in this way 
+const getPosition = function() {
+  return new Promise(function(resolve,reject){
+    // navigator.geolocation.getCurrentPosition(
+    //   position=>resolve(position),
+    //   err=>reject(err)
+    // )
+    navigator.geolocation.getCurrentPosition(resolve,reject)
+    // the code i commented above and written below are the same
+  })
+}
+getPosition().then(pos=>console.log(pos))
+// i have called the getPosition function and it is giving me my location object still. So in this way we have change our call-back base async code to promise base
 
 ///////////////////////////////////////
 
