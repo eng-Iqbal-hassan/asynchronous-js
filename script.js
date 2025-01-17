@@ -487,3 +487,43 @@ getPosition().then(pos=>console.log(pos))
 
 ///////////////////////////////////////
 
+// Lecture 18: Coding challenge
+const imgContainer = document.querySelector('.images');
+// create the function which return the promise 
+const createImage = function(imgPath){
+  return new Promise(function(resolve,reject){
+    const img = document.createElement('img');
+    img.src=imgPath;
+    img.addEventListener('load',function(){
+      imgContainer.append(img);
+      resolve(img)
+    })
+    img.addEventListener('error',function(){
+      reject(new Error('Image not found'))
+    })
+  })
+} 
+// call the function
+let currentImg;
+createImage('img/img-1.jpg').then(img=>{
+  currentImg = img
+  console.log('image 1 is loaded')
+  return wait(2)
+})
+.then(()=>{
+  currentImg.style.display = 'none'
+  return createImage('img/img-2.jpg')
+})
+.then(img=>{
+  currentImg = img
+  console.log('image 2 is loaded')
+  return wait(2)
+})
+.then(()=>{
+  currentImg.style.display = 'none'
+})
+.catch(err=>console.error(err))
+// in this whole process img-1 is loaded and after 2 second it is removed and second image is added and after 2 second the second image also have removed
+
+///////////////////////////////////////
+
