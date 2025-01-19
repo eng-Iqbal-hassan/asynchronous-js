@@ -9,6 +9,7 @@ const countriesContainer = document.querySelector('.countries');
 // NEW REVERSE GEOCODING API URL (use instead of the URL shown in videos):
 // https://api.bigdatacloud.net/data/reverse-geocode-client?latitude=${lat}&longitude=${lng}
 
+
 ///////////////////////////////////////
 
 // Lecture 1:
@@ -618,6 +619,7 @@ getCountryData2('Portugal')
 // Lecture 22: Running promises in parallel
 // Now we wanted to get a function which takes the data of 3 countries and in return gives us the array of the capital of these 3 countries
 
+/*
 const get3Countries = async function(c1,c2,c3) {
   try {
     // const [data1] = await getJSON(`https://restcountries.com/v2/name/${c1}`);
@@ -631,9 +633,9 @@ const get3Countries = async function(c1,c2,c3) {
     // For this thing we use the promise.all combinator function which is a kind of helper static function
     // this function takes the promises and return a single promise which runs all the promises inside it in the same time.
     const data = await Promise.all([
-      await getJSON(`https://restcountries.com/v2/name/${c1}`),
-      await getJSON(`https://restcountries.com/v2/name/${c2}`),
-      await getJSON(`https://restcountries.com/v2/name/${c3}`),
+      getJSON(`https://restcountries.com/v2/name/${c1}`),
+      getJSON(`https://restcountries.com/v2/name/${c2}`),
+      getJSON(`https://restcountries.com/v2/name/${c3}`),
     ])
     console.log(data.map(d=>d[0].capital))
     // console.log(data)
@@ -645,5 +647,51 @@ const get3Countries = async function(c1,c2,c3) {
   catch(err) {console.error(err)}
 }
 get3Countries('Pakistan','Japan','Afghanistan')
+*/
 
 ///////////////////////////////////////
+
+// Lecture 23: OTHER PROMISE COMBINATOR: RACE, ALLSETTLED AND ANY
+// Promise.race -> like all other promise combinator, it also receive the array of promises and return the single promise but this combinator settles as soon as any one of the promise is settles. Settles mean when one of the promise value arrives. So, the promise which settles wins the race
+// now consider the IIFE
+// (async function(){
+//   const res = await Promise.race([
+//     getJSON('https://restcountries.com/v2/name/pakistan'),
+//     getJSON('https://restcountries.com/v2/name/india'),
+//     getJSON('https://restcountries.com/v2/name/afghanistan'),
+//   ])
+//   console.log('promise.race result',res[0])
+// })()
+  // Promise.race are very useful promises to avoid never ending promises or very long promises
+  // consider that we are fetching the data and if the user has very bad internet connection then browser keeps loading and now we will add a timeout function which could execute after certain time and the second thing is fetch function in Promise.race, which things happen first will be the result of this race.
+  const timeout = function(sec) {
+    return new Promise(function(_,reject){
+      setTimeout(function(){
+        reject(new Error('Request took too long'))
+      }, sec*1000)
+    })
+  }
+  Promise.race([
+    getJSON('https://restcountries.com/v2/name/pakistan'),
+    timeout(0.1)
+  ]).then(res=>console.log('race result',res[0])).catch(err=>console.error('race error',err))
+
+  // Promise.allSettled -> it takes in the array of promises and return array of all the promises which are settled like Promise.all but the difference is that promise.all is short-circuited when any one of the promise is rejected but on the other hand promise.allSettled never short-circuited
+
+  // so consider the snippet a bit direct
+  Promise.allSettled([
+    Promise.resolve('Success'),
+    Promise.reject('error'),
+    Promise.resolve('Another Success'),
+  ]).then(res=>console.log(res))
+
+  // in console it is shown the result which consists all the response even one is rejected
+// Promise.any takes in the array of promises and returns the first fulfill promisee
+Promise.any([
+  Promise.reject('error'),
+  Promise.resolve('Another Success'),
+  Promise.resolve('Success'),
+]).then(res=>console.log(res))
+// in this case the result id another success
+// so promise.any is similar to the promise.race but the difference is that promise.ant ignores the error and search for the resolve promise but the promise.race shows the error if it occurs first.
+/////////////////////////////////////// 
