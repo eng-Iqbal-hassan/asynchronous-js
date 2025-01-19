@@ -694,4 +694,6 @@ Promise.any([
 ]).then(res=>console.log(res))
 // in this case the result id another success
 // so promise.any is similar to the promise.race but the difference is that promise.ant ignores the error and search for the resolve promise but the promise.race shows the error if it occurs first.
+// The most important promises are promise.race and promise.all
+// Note: Whenever you use the async function inside the map, instead of value you get the array of promises and to get the value out of it use the Promise.all 
 /////////////////////////////////////// 
