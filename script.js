@@ -548,17 +548,49 @@ const getCountryData2 = async function(country) {
     console.log('response using async await',res)
     // in console it is clear that the result is the data object.
     const data = await res.json();
+    const [data2] = data;
+    console.log('object', data2,data2.capital)
     console.log('data-2',data)
     // console.log('data-2',data[0])
     renderCountry(data[0])
     // So these two awaits give us the promises and these are the replacement of then method 
+    return `you are in ${data2.capital}`
   } catch(err) {
     console.error(err)
     renderError(`Something went wrong ${err.message}`)
+
+    // Reject promise returned from async function
+    throw err;
+
   }
 }
-getCountryData2('Portugallhkg')
-console.log('first response')
+console.log('1: Start getting country data')
+// getCountryData2('Portugal')
+// here in the given example we are returning the string from aync function. Now like regular function we store this function call in a variable and then get that variable value in console
+// const city =getCountryData2('Portugal');
+// console.log(city)
+// in console it is being observed that promise is returned from this async function while we wanted to have the string
+// because the code for this function is running in the background and js has no way of knowing that what will be the return of this function so at this point js returns the promise
+// the string which we wanted to return is the fulfilled value of the promise.
+// the solution is the same that calling the then method will give us the success of this call.
+// so;
+// also it is being observed that if there is something wrong then it still giving us the success and in success there is undefine in the call.
+// the solution of this thing is to re-throw the error.
+// the thing we have done so far is the mixing of new async await with the old then method which is on personal level is not preferred.
+
+getCountryData2('Portugal')
+.then(city=>console.log(city))
+.catch(err=>console.error(err.message))
+.finally(()=>console.log('3: Finish getting the country data'))
+
+// conversion into the format of async await with IIFE
+// (async function(){
+//   try {
+//     const city = await getCountryData2('Portugal')
+//     console.log(city)
+//   }
+//   catch(err) {console.log(err.message)}
+// })()
 // So, async await are just syntactic sugar over the then method and behind the scene we still use the promises 
 // The country card is shown and we have make the call even avoiding the chaining method as well and also avoid the mess of call-back function 
 
@@ -579,3 +611,6 @@ console.log('first response')
 
 ///////////////////////////////////////
 
+// Lecture 21: Returning value from Async functions
+
+///////////////////////////////////////
