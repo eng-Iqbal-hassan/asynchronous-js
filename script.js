@@ -267,15 +267,15 @@ const renderError = function(msg) {
 //   })
 // }
 
-// const getJSON = function(url, errorMsg='Something went wrong') {
-//   return fetch(url).then(response=>{
-//     console.log('response', response)
-//     if(!response.ok) {
-//       throw new Error(`${errorMsg} ${response.status}`)
-//     }
-//     return response.json()
-//   })
-// }
+const getJSON = function(url, errorMsg='Something went wrong') {
+  return fetch(url).then(response=>{
+    console.log('response', response)
+    if(!response.ok) {
+      throw new Error(`${errorMsg} ${response.status}`)
+    }
+    return response.json()
+  })
+}
 
 // const getCountryData = function(country) {
 //   getJSON(`https://countries-api-836d.onrender.com/countries/name/${country}`,'Country not found')
@@ -612,5 +612,38 @@ getCountryData2('Portugal')
 ///////////////////////////////////////
 
 // Lecture 21: Returning value from Async functions
+
+///////////////////////////////////////
+
+// Lecture 22: Running promises in parallel
+// Now we wanted to get a function which takes the data of 3 countries and in return gives us the array of the capital of these 3 countries
+
+const get3Countries = async function(c1,c2,c3) {
+  try {
+    // const [data1] = await getJSON(`https://restcountries.com/v2/name/${c1}`);
+    // const [data2] = await getJSON(`https://restcountries.com/v2/name/${c2}`);
+    // const [data3] = await getJSON(`https://restcountries.com/v2/name/${c3}`);
+    // the response of the await is the array which is containing the object data, so getting the first element of the response we just do de-structuring and then we get the data object from it.
+
+    // console.log([data1.capital,data2.capital,data3.capital])
+    // it has been observed that with this kind of code the ajax call c2 waits for c1 to load and similar way c3 waits for c2
+    // this thing does not make sense. All the AJAX call should be done in parallel. It will save the valuable loading time
+    // For this thing we use the promise.all combinator function which is a kind of helper static function
+    // this function takes the promises and return a single promise which runs all the promises inside it in the same time.
+    const data = await Promise.all([
+      await getJSON(`https://restcountries.com/v2/name/${c1}`),
+      await getJSON(`https://restcountries.com/v2/name/${c2}`),
+      await getJSON(`https://restcountries.com/v2/name/${c3}`),
+    ])
+    console.log(data.map(d=>d[0].capital))
+    // console.log(data)
+    // it has been observed that this data contains the three array for three countries which we just map over to get the capital out from these arrays
+    // when any of the AJAX call is rejected the whole promise is gonna rejected(short-circuited)
+    // whenever we need to make the multiple AJAX call which does not depend on each other then they must do in combinator function like this way
+    // if you are not using async await, then the same thing can be done when the response coming is tackled using the then method the whole helper function and after that then method used on them will give us the similar way as we are getting the result over there.
+  }
+  catch(err) {console.error(err)}
+}
+get3Countries('Pakistan','Japan','Afghanistan')
 
 ///////////////////////////////////////
